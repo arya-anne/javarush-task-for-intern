@@ -58,4 +58,7 @@ public interface PlayerRepository extends PagingAndSortingRepository<Player, Lon
             @Param("maxExperience") Integer maxExperience,
             @Param("minLevel") Integer minLevel,
             @Param("maxLevel") Integer maxLevel);
+
+    @Query(value="select max(id) from player", nativeQuery = true)
+    Long findMaxId();
 }

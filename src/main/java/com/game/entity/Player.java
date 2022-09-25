@@ -32,10 +32,10 @@ public class Player {
     private Boolean banned;
 
     @Column(name="level")
-    private int level;
+    private Integer level;
 
     @Column(name="experience")
-    private int experience;
+    private Integer experience;
 
     @Column(name="untilNextLevel")
     private int untilNextLevel;
@@ -86,15 +86,15 @@ public class Player {
         return banned;
     }
 
-    public int getLevel() {
+    public Integer getLevel() {
         return level;
     }
 
-    public int getExperience() {
+    public Integer getExperience() {
         return experience;
     }
 
-    public int getUntilNextLevel() {
+    public Integer getUntilNextLevel() {
         return untilNextLevel;
     }
 
@@ -139,7 +139,26 @@ public class Player {
     }
 
     public Boolean isValid(){
-        return true;
+        if(name !=null && name.length()<=12
+                && title!=null && title.length()<=30
+                && experience != null && experience>=0 && experience<=10_000_000
+                && birthday.getYear() + 1900 >=2000 && birthday.getYear()<=3000
+                && race != null
+                && profession != null
+        ) {
+            return true;
+        }
+       else return false;
+    }
+
+    public void countAndSetLevel() {
+        int level=(int)((Math.sqrt(2500+200*experience)-50)/100);
+        this.setLevel(level);
+    }
+
+    public void countAndSetUntilNextLevel() {
+        int untilNextLevel = 50*(level+1)*(level+2)-experience;
+        this.setUntilNextLevel(untilNextLevel);
     }
 }
 

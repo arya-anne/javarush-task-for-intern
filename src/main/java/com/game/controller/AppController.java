@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class AppController {
@@ -86,10 +87,77 @@ public class AppController {
     @ResponseBody
     ResponseEntity<Player> createPlayer(@RequestBody Player player) {
         if (player.isValid()){
-            player.setLevel(Math.round((Math.sqrt(2500+200*player.getExperience())-50)/100)));
-            return new ResponseEntity<Player>(repository.save(player), HttpStatus.OK);
+            Long id = repository.findMaxId()+1;
+            player.setId(id);
+            player.countAndSetLevel();
+            player.countAndSetUntilNextLevel();
+            return new ResponseEntity<>(repository.save(player), HttpStatus.OK);
         }
         else return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/rest/players/{id}")
+    ResponseEntity<Player> getPlayer(@PathVariable Long id) {
+        if(id>0) {
+           Optional<Player> player = repository.findById(id);
+           if (player.isPresent()) {
+               return new ResponseEntity<>(player.get(),HttpStatus.OK);
+           }
+           else return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+
+    @PostMapping("/rest/players/{id}")
+    ResponseEntity<Player> updatePlayer(@PathVariable Long id, @RequestBody Player requestPlayer) {
+        if(id>0) {
+            Optional<Player> player = repository.findById(id);
+            if (player.isPresent()) {
+                Player playerToUpdate = player.get();
+                if (requestPlayer.getName() != null) {
+                    playerToUpdate.setName(requestPlayer.getName());
+                }
+                if (requestPlayer.getTitle() != null) {
+                    playerToUpdate.setTitle(requestPlayer.getTitle());
+                }
+                if (requestPlayer.getRace() != null) {
+                    playerToUpdate.setRace(requestPlayer.getRace());
+                }
+                if (requestPlayer.getProfession() != null) {
+                    playerToUpdate.setProfession(requestPlayer.getProfession());
+                }
+                if (requestPlayer.getBanned() != null) {
+                    playerToUpdate.setBanned(requestPlayer.getBanned());
+                }
+                if (requestPlayer.getExperience() != null) {
+                    playerToUpdate.setExperience(requestPlayer.getExperience());
+                }
+                if (requestPlayer.getBirthday() != null) {
+                    playerToUpdate.setBirthday(requestPlayer.getBirthday());
+                }
+                if (playerToUpdate.isValid()){
+                    playerToUpdate.countAndSetLevel();
+                    playerToUpdate.countAndSetUntilNextLevel();
+                    return new ResponseEntity<>(repository.save(playerToUpdate),HttpStatus.OK);
+                }
+                else return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            }
+            else return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        else return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+
+    @DeleteMapping("/rest/players/{id}")
+    ResponseEntity<Void> deletePlayer(@PathVariable Long id) {
+        if(id>0) {
+            Optional<Player> player = repository.findById(id);
+            if (player.isPresent()) {
+                repository.delete(player.get());
+                return new ResponseEntity(HttpStatus.OK);
+            }
+            else return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
 }
 
